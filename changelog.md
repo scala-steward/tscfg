@@ -1,3 +1,12 @@
+2021-06 - 0.9.986
+
+- some basic preps toward #73 "Serialization for shared objects"
+    - note: pretty ad hoc logic to determine whether an extension name is an
+      "external" one (e.g., `java.io.Serializable`), and to determine whether
+      it's an interface (in the java case)
+    - moving forward, probably better to add some special syntax, so the user
+      is to determine the appropriate cases in the `extends` construct.
+
 2021-03 - 0.9.985
 
 - env var `NO_FORMATTER` convenience to skip the standard formatting of

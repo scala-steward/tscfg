@@ -1081,4 +1081,24 @@ class JavaMainSpec extends Specification {
       c.example.c.get(0).dddd.eeee === 30
     }
   }
+
+  "issue 73 - Serialization for shared objects" should {
+    "73a @define abstract extends java.io.Serializable" in {
+      "generate AbstractA implements java.io.Serializable" in {
+        val r = JavaGen.generate("example/issue73a.spec.conf")
+        r.code.contains("implements java.io.Serializable") === true
+      }
+
+      "usual parsing" in {
+        val c = new JavaIssue73aCfg(ConfigFactory.parseString(
+          """test.impl {
+            |  a = "aa"
+            |  b = "bb"
+            |}
+            |""".stripMargin))
+        c.test.impl.a === "aa"
+        c.test.impl.b === "bb"
+      }
+    }
+  }
 }

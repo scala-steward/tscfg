@@ -1005,4 +1005,24 @@ class ScalaMainSpec extends Specification {
       c.example.c.head.dddd.eeee === 30
     }
   }
+
+  "issue 73 - Serialization for shared objects" should {
+    "73a @define abstract extends java.io.Serializable" in {
+      "generate AbstractA extends java.io.Serializable()" in {
+        val r = ScalaGen.generate("example/issue73a.spec.conf")
+        r.code.contains("extends java.io.Serializable()") === true
+      }
+
+      "usual parsing" in {
+        val c = ScalaIssue73aCfg(ConfigFactory.parseString(
+          """test.impl {
+            |  a = "aa"
+            |  b = "bb"
+            |}
+            |""".stripMargin))
+        c.test.impl.a === "aa"
+        c.test.impl.b === "bb"
+      }
+    }
+  }
 }
