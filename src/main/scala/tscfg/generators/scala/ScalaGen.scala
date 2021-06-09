@@ -21,11 +21,11 @@ class ScalaGen(genOpts: GenOpts) extends Generator(genOpts) {
 
   import scalaUtil.{scalaIdentifier, getClassName}
 
-  def padScalaIdLength(implicit symbols:List[String]): Int =
+  def padScalaIdLength(implicit symbols: List[String]): Int =
     if (symbols.isEmpty) 0 else
       symbols.map(scalaIdentifier).maxBy(_.length).length
 
-  def padId(id: String)(implicit symbols:List[String]): String = id + (" " * (padScalaIdLength - id.length))
+  def padId(id: String)(implicit symbols: List[String]): String = id + (" " * (padScalaIdLength - id.length))
 
   def generate(objectType: ObjectType): GenResult = {
     genResults = GenResult()
@@ -135,8 +135,8 @@ class ScalaGen(genOpts: GenOpts) extends Generator(genOpts) {
 
     val classMembersStr = buildClassMembersString(parentClassMemberResults ++ results, padId)
 
-    val parentClassString = parentClassName.map(" extends " + _ + "(" +
-      parentClassMemberResults.map(_._1).mkString(",") + ")").getOrElse("")
+    val parentClassString = buildParentClassString(parentClassName, parentClassMemberResults)
+
 
     val classStr =
       s"""final case class $className(
@@ -219,6 +219,18 @@ class ScalaGen(genOpts: GenOpts) extends Generator(genOpts) {
     )
   }
 
+  private def buildParentClassString(parentClassName: Option[String],
+                                     parentClassMemberResults: Seq[(String, Res, AnnType, Boolean)]) =
+    parentClassName match {
+      case Some(parentClassName) =>
+        val superClassFieldString = if (parentClassMemberResults.nonEmpty)
+          "(" + parentClassMemberResults.map(_._1).mkString(",") + ")"
+        else ""
+        s" extends $parentClassName$superClassFieldString"
+      case None => ""
+    }
+
+
   private def generateForAbstractObj(aot: AbstractObjectType,
                                      classNamesPrefix: List[String],
                                      className: String,
@@ -258,8 +270,7 @@ class ScalaGen(genOpts: GenOpts) extends Generator(genOpts) {
 
     val abstractClassMembersStr = buildClassMembersString(parentClassMemberResults ++ results, padId, isAbstractClass = true)
 
-    val parentClassString = parentClassName.map(" extends " + _ + "(" +
-      parentClassMemberResults.map(_._1).mkString(",") + ")").getOrElse("")
+    val parentClassString = buildParentClassString(parentClassName, parentClassMemberResults)
 
     val abstractClassStr =
       s"""sealed abstract class $className (
@@ -359,10 +370,10 @@ class ScalaGen(genOpts: GenOpts) extends Generator(genOpts) {
 
     val str =
       s"""|sealed trait $className
-         |object $className {
-         |  ${et.members.map(m => s"object $m extends $className").mkString("\n  ")}
-         |  ${resolve.replaceAll("\n", "\n  ")}
-         |}""".stripMargin
+          |object $className {
+          |  ${et.members.map(m => s"object $m extends $className").mkString("\n  ")}
+          |  ${resolve.replaceAll("\n", "\n  ")}
+          |}""".stripMargin
 
     val baseType = classNamesPrefix.reverse.mkString + className
     Res(et,
@@ -668,12 +679,12 @@ private[scala] class Accessors {
     else {
       val adjusted = elemMethodName.replace("_", ".")
       val objRefResolution = lt.t match {
-        case ort:ObjectRefType =>
+        case ort: ObjectRefType =>
           val namespace = Namespace.resolve(ort.namespace)
           namespace.getDefine(ort.simpleName) flatMap { t =>
             t match {
               case _: EnumObjectType =>
-              // TODO some more useful path (for now just "?" below)
+                // TODO some more useful path (for now just "?" below)
                 Some(s"""$adjusted.$$resEnum(cv.unwrapped().toString, "?", $$tsCfgValidator)""")
               case _ => None
             }

@@ -1010,7 +1010,7 @@ class ScalaMainSpec extends Specification {
     "73a @define abstract extends java.io.Serializable" in {
       "generate AbstractA extends java.io.Serializable()" in {
         val r = ScalaGen.generate("example/issue73a.spec.conf")
-        r.code.contains("extends java.io.Serializable()") === true
+        r.code.contains("extends java.io.Serializable") === true
       }
 
       "usual parsing" in {

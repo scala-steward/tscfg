@@ -6,7 +6,7 @@ final case class ScalaIssue73aCfg(
 object ScalaIssue73aCfg {
   sealed abstract class AbstractA(
       val a: java.lang.String
-  ) extends java.io.Serializable()
+  ) extends java.io.Serializable
 
   final case class ImplA(
       override val a: java.lang.String,
